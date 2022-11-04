@@ -1,11 +1,14 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Auto Assigner'
+description: 'Add selected number of reviewers per group to pull requests when pull requests are opened.'
+author: 'dorukgunes'
 inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  token:
+    description: 'A token for the repo'
+    default: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+    required: false
+  configuration-path:
+    description: 'A path for the auto-assign configuration'
+    default: '.github/auto_assign.yml'
 runs:
   using: 'node16'
   main: 'dist/index.js'
