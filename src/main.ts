@@ -32,9 +32,13 @@ async function run(): Promise<void> {
     const configPath = core.getInput('configuration-path', {
       required: true,
     })
+    
+    core.debug(`configPath: ${configPath}`)
 
     const client = github.getOctokit(token);
     const { context } = github;
+
+    core.debug(`context: ${JSON.stringify(context)}`)
 
     const config: Config = await getConfiguration(client, {
       owner: context.repo.owner,
@@ -43,11 +47,14 @@ async function run(): Promise<void> {
       ref: context.sha,
     })
 
+    core.debug(`config: ${JSON.stringify(config)}`)
+
     await assignReviewers(client, context, config);
 
     core.info('Successfully assigned reviewers');
   } catch (error) {
     if (error instanceof Error) {
+      core.error(error)
       core.setFailed(error.message)
     }
   }

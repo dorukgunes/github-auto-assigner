@@ -69,6 +69,8 @@ function assignReviewers(client, context, config) {
         const { pull_request: event } = context.payload;
         const { title, draft, user, number } = event;
         const { includeAllKeywords, excludeAllKeywords, reviewGroups } = config;
+        core.debug(`assignReviewers ${includeAllKeywords} ${excludeAllKeywords} ${reviewGroups}`);
+        core.debug(JSON.stringify(reviewGroups));
         if (draft === true) {
             core.info('Skips the process since pr is a draft');
             return;
@@ -77,11 +79,11 @@ function assignReviewers(client, context, config) {
             core.info('Skips the process since pr is created by a bot');
             return;
         }
-        if (includesKeywords(title, excludeAllKeywords)) {
+        if (excludeAllKeywords && includesKeywords(title, excludeAllKeywords)) {
             core.info('Skips the process since pr title includes excludeAllKeywords');
             return;
         }
-        if (includesKeywords(title, includeAllKeywords)) {
+        if (includeAllKeywords && includesKeywords(title, includeAllKeywords)) {
             core.info('Assigns all reviewers since pr title includes includeAllKeywords');
             const reviewers = getAllReviewers(config);
             yield client.rest.pulls.requestReviewers({
@@ -175,19 +177,23 @@ function run() {
             const configPath = core.getInput('configuration-path', {
                 required: true,
             });
+            core.debug(`configPath: ${configPath}`);
             const client = github.getOctokit(token);
             const { context } = github;
+            core.debug(`context: ${JSON.stringify(context)}`);
             const config = yield getConfiguration(client, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 path: configPath,
                 ref: context.sha,
             });
+            core.debug(`config: ${JSON.stringify(config)}`);
             yield (0, assign_reviewers_1.assignReviewers)(client, context, config);
             core.info('Successfully assigned reviewers');
         }
         catch (error) {
             if (error instanceof Error) {
+                core.error(error);
                 core.setFailed(error.message);
             }
         }
