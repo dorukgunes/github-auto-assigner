@@ -13,12 +13,12 @@ on:
     types: [opened, ready_for_review]
 
 jobs:
-  add-reviews:
+  add-reviewers:
     runs-on: ubuntu-latest
     steps:
-      - uses: dorukgunes/github-auto-assigner@v1.2.4
+      - uses: dorukgunes/github-auto-assigner@v0.1
         with:
-          configuration-path: '.github/some_name_for_configs.yml' # Only needed if you use something other than .github/auto_assign.yml
+          configuration-path: '.github/some_name_for_config.yml' # Only needed if you use something other than .github/auto_assign.yml
 ```
 
 

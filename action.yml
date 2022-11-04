@@ -4,7 +4,7 @@ author: 'dorukgunes'
 inputs:
   token:
     description: 'A token for the repo'
-    default: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+    default: ${{ github.token }}
     required: false
   configuration-path:
     description: 'A path for the auto-assign configuration'

@@ -35,6 +35,7 @@ async function run(): Promise<void> {
 
     const client = github.getOctokit(token);
     const { context } = github;
+
     const config: Config = await getConfiguration(client, {
       owner: context.repo.owner,
       repo: context.repo.repo,
