@@ -47,10 +47,12 @@ export async function assignReviewers(client: InstanceType<typeof GitHub>, conte
         throw new Error('Webhook payload does not exist')
     }
 
+
     const { pull_request: event } = context.payload as PullRequestEvent;
     const { title, draft, user, number } = event;
     const { includeAllKeywords, excludeAllKeywords, reviewGroups } = config;
 
+    core.debug(`assignReviewers ${includeAllKeywords} ${excludeAllKeywords} ${reviewGroups}`)
     core.debug(JSON.stringify(reviewGroups))
 
     if (draft === true) {
@@ -67,14 +69,14 @@ export async function assignReviewers(client: InstanceType<typeof GitHub>, conte
         return
     }
 
-    if (includesKeywords(title, excludeAllKeywords)) {
+    if (excludeAllKeywords && includesKeywords(title, excludeAllKeywords)) {
         core.info(
             'Skips the process since pr title includes excludeAllKeywords'
         )
         return
     }
 
-    if (includesKeywords(title, includeAllKeywords)) {
+    if (includeAllKeywords &&  includesKeywords(title, includeAllKeywords)) {
         core.info(
             'Assigns all reviewers since pr title includes includeAllKeywords'
         )
