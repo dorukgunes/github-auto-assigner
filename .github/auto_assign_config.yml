@@ -1,0 +1,16 @@
+# A list of reviewers, split into different groups, to be added to pull requests (GitHub user name)
+reviewGroups:
+  groupA:
+    numberOfReviewers: 1
+    reviewers:
+      - aykutbulca
+
+# A list of keywords to add all reviewers to the pull request if pull requests include it
+# includeAllKeywords:
+#   - hotfix
+#   - release
+
+# A list of keywords to avoid adding reviewers if pull requests include it
+# excludeAllKeywords:
+#   - wip
+#   - draft
