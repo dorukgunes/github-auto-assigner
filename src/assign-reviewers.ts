@@ -51,6 +51,8 @@ export async function assignReviewers(client: InstanceType<typeof GitHub>, conte
     const { title, draft, user, number } = event;
     const { includeAllKeywords, excludeAllKeywords, reviewGroups } = config;
 
+    core.debug(JSON.stringify(reviewGroups))
+
     if (draft === true) {
         core.info(
             'Skips the process since pr is a draft'
