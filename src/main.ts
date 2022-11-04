@@ -48,6 +48,7 @@ async function run(): Promise<void> {
     core.info('Successfully assigned reviewers');
   } catch (error) {
     if (error instanceof Error) {
+      core.error(error)
       core.setFailed(error.message)
     }
   }
