@@ -3,7 +3,7 @@ reviewGroups:
   groupA:
     numberOfReviewers: 1
     reviewers:
-      - aykutbulca
+      - drkgns
 
 # A list of keywords to add all reviewers to the pull request if pull requests include it
 # includeAllKeywords:
