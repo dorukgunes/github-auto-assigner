@@ -40,16 +40,23 @@ reviewGroups:
       - reviewerE
       - reviewerF
 
-# A list of keywords to add all reviewers to the pull request if pull requests include it
+# A list of keywords to add all reviewers to the pull request if pull requests title or branch name include it
 # includeAllKeywords:
 #   - hotfix
 #   - release
 
-# A list of keywords to avoid adding reviewers if pull requests include it
+# A list of keywords to avoid adding reviewers if pull requests title or branch name include it
 # excludeAllKeywords:
 #   - wip
 #   - draft
 ```
+
+## Development
+After you develop you changes make sure to follow these actions
+- Make sure run `npm run build`
+- Commit your changes
+- To release, make you sure to create a tag `git tag -a -m "Include pr branch name for include and exlude keywords" v0.2 `
+- Push the tags as well `git push --follow-tags`
 
 ## Licence
 MIT

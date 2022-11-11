@@ -48,7 +48,7 @@ export async function assignReviewers(client: InstanceType<typeof GitHub>, conte
     }
 
     const { pull_request: event } = context.payload as PullRequestEvent;
-    const { title, draft, user, number } = event;
+    const { title, draft, user, number, head: { ref: pullRequestBranch } } = event;
     const { includeAllKeywords, excludeAllKeywords, reviewGroups } = config;
 
     if (draft === true) {
@@ -65,16 +65,16 @@ export async function assignReviewers(client: InstanceType<typeof GitHub>, conte
         return
     }
 
-    if (excludeAllKeywords && includesKeywords(title, excludeAllKeywords)) {
+    if (excludeAllKeywords && (includesKeywords(title, excludeAllKeywords) || includesKeywords(pullRequestBranch, excludeAllKeywords))) {
         core.info(
-            'Skips the process since pr title includes excludeAllKeywords'
+            'Skips the process since pr title or branch name includes excludeAllKeywords'
         )
         return
     }
 
-    if (includeAllKeywords &&  includesKeywords(title, includeAllKeywords)) {
+    if (includeAllKeywords &&  (includesKeywords(title, includeAllKeywords) || includesKeywords(pullRequestBranch, includeAllKeywords))) {
         core.info(
-            'Assigns all reviewers since pr title includes includeAllKeywords'
+            'Assigns all reviewers since pr title or branch name includes includeAllKeywords'
         )
         const reviewers = getAllReviewers(config)
         await client.rest.pulls.requestReviewers({
