@@ -16,7 +16,7 @@ jobs:
   add-reviewers:
     runs-on: ubuntu-latest
     steps:
-      - uses: dorukgunes/github-auto-assigner@v0.1
+      - uses: zeplin/github-auto-assign@v0.2
         with:
           configuration-path: '.github/some_name_for_config.yml' # Only needed if you use something other than .github/auto_assign.yml
 ```
