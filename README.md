@@ -55,8 +55,7 @@ reviewGroups:
 After you develop you changes make sure to follow these actions
 - Make sure run `npm run build`
 - Commit your changes
-- To release, make you sure to create a tag `git tag -a -m "Include pr branch name for include and exlude keywords" v0.2 `
-- Push the tags as well `git push --follow-tags`
+- To release, make you sure to create a tag 
 
 ## Licence
 MIT
