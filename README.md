@@ -16,7 +16,7 @@ jobs:
   add-reviewers:
     runs-on: ubuntu-latest
     steps:
-      - uses: zeplin/auto-assign-reviewers@v0.2
+      - uses: zeplin/auto-assign-reviewers@v0.3
         with:
           configuration-path: '.github/some_name_for_config.yml' # Only needed if you use something other than .github/auto_assign.yml
 ```
