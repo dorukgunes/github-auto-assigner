@@ -1,5 +1,5 @@
 {
-  "name": "auto-assigner",
+  "name": "auto-assign-reviewers",
   "version": "0.0.0",
   "private": true,
   "main": "lib/main.js",
