@@ -40,6 +40,15 @@ reviewGroups:
       - reviewerE
       - reviewerF
 
+# A list of reviewers, split into different groups, to be added to pull requests (GitHub user name)
+reviewTeams:
+  teamA:
+    teamSlug: backend
+    numberOfReviewers: 1
+  groupB:
+    teamSlug: frontend
+    addAllTeamMembers: true
+
 # A list of keywords to add all reviewers to the pull request if pull requests title or branch name include it
 # includeAllKeywords:
 #   - hotfix

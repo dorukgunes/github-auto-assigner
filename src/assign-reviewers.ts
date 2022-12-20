@@ -37,6 +37,34 @@ function selectReviewers(users: string[], numberOfUsers: number): string[] {
   return selectedUsers
 }
 
+async function getTeamMembers(
+  client: InstanceType<typeof GitHub>,
+  context: Context,
+  teamSlug: string
+): Promise<string[]> {
+  const members = await client.rest.teams.listMembersInOrg({
+    org: context.repo.owner,
+    team_slug: teamSlug
+  })
+
+  const membersList = members.data.map(member => member.login)
+  return membersList
+}
+
+async function getAllTeamMembers(client: InstanceType<typeof GitHub>,
+  context: Context,
+  config: Config
+): Promise<string[]> {
+  const teamMembers: string[] = []
+
+  for (const reviewTeam of Object.values(config.reviewTeams)) {
+    const members = await getTeamMembers(client, context, reviewTeam.teamSlug)
+    teamMembers.push(...members)
+  }
+
+  return teamMembers
+}
+
 export async function assignReviewers(
   client: InstanceType<typeof GitHub>,
   context: Context,
@@ -85,7 +113,7 @@ export async function assignReviewers(
     core.info(
       'Assigns all reviewers since pr title or branch name includes includeAllKeywords'
     )
-    const reviewers = getAllReviewers(config)
+    const reviewers = getAllReviewers(config).concat(await getAllTeamMembers(client, context, config));
     await client.rest.pulls.requestReviewers({
       owner: context.repo.owner,
       repo: context.repo.repo,
@@ -102,6 +130,29 @@ export async function assignReviewers(
       reviewGroup.numberOfReviewers
     )
     reviewers.push(...selectedReviewers)
+  }
+
+  for (const reviewTeam of Object.values(config.reviewTeams)) {
+    const members = await getTeamMembers(
+      client,
+      context,
+      reviewTeam.teamSlug
+    )
+
+    const notAlreadySelectedMembers = members.filter(member => {
+      return !reviewers.includes(member)
+    })
+
+    if (reviewTeam.addAllTeamMembers === true) {
+      reviewers.push(...notAlreadySelectedMembers)
+      continue;
+    }
+
+    const selectedMembers = selectReviewers(
+      notAlreadySelectedMembers,
+      reviewTeam.numberOfReviewers!
+    )
+    reviewers.push(...selectedMembers)
   }
 
   await client.rest.pulls.requestReviewers({
