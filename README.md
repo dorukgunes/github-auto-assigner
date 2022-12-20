@@ -40,7 +40,7 @@ reviewGroups:
       - reviewerE
       - reviewerF
 
-# A list of reviewers, split into different groups, to be added to pull requests (GitHub user name)
+# A list of github teams
 reviewTeams:
   teamA:
     teamSlug: backend

@@ -132,6 +132,9 @@ export async function assignReviewers(
     reviewers.push(...selectedReviewers)
   }
 
+  core.info(
+    `${Object.keys(config.reviewTeams).length} teams found in config file`
+  )
   for (const reviewTeam of Object.values(config.reviewTeams)) {
     const members = await getTeamMembers(
       client,

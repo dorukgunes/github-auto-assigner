@@ -61,16 +61,34 @@ function selectReviewers(users, numberOfUsers) {
     }
     return selectedUsers;
 }
+function getTeamMembers(client, context, teamSlug) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const members = yield client.rest.teams.listMembersInOrg({
+            org: context.repo.owner,
+            team_slug: teamSlug
+        });
+        const membersList = members.data.map(member => member.login);
+        return membersList;
+    });
+}
+function getAllTeamMembers(client, context, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const teamMembers = [];
+        for (const reviewTeam of Object.values(config.reviewTeams)) {
+            const members = yield getTeamMembers(client, context, reviewTeam.teamSlug);
+            teamMembers.push(...members);
+        }
+        return teamMembers;
+    });
+}
 function assignReviewers(client, context, config) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!context.payload.pull_request) {
             throw new Error('Webhook payload does not exist');
         }
         const { pull_request: event } = context.payload;
-        const { title, draft, user, number } = event;
+        const { title, draft, user, number, head: { ref: pullRequestBranch } } = event;
         const { includeAllKeywords, excludeAllKeywords, reviewGroups } = config;
-        core.debug(`assignReviewers ${includeAllKeywords} ${excludeAllKeywords} ${reviewGroups}`);
-        core.debug(JSON.stringify(reviewGroups));
         if (draft === true) {
             core.info('Skips the process since pr is a draft');
             return;
@@ -79,18 +97,22 @@ function assignReviewers(client, context, config) {
             core.info('Skips the process since pr is created by a bot');
             return;
         }
-        if (excludeAllKeywords && includesKeywords(title, excludeAllKeywords)) {
-            core.info('Skips the process since pr title includes excludeAllKeywords');
+        if (excludeAllKeywords &&
+            (includesKeywords(title, excludeAllKeywords) ||
+                includesKeywords(pullRequestBranch, excludeAllKeywords))) {
+            core.info('Skips the process since pr title or branch name includes excludeAllKeywords');
             return;
         }
-        if (includeAllKeywords && includesKeywords(title, includeAllKeywords)) {
-            core.info('Assigns all reviewers since pr title includes includeAllKeywords');
-            const reviewers = getAllReviewers(config);
+        if (includeAllKeywords &&
+            (includesKeywords(title, includeAllKeywords) ||
+                includesKeywords(pullRequestBranch, includeAllKeywords))) {
+            core.info('Assigns all reviewers since pr title or branch name includes includeAllKeywords');
+            const reviewers = getAllReviewers(config).concat(yield getAllTeamMembers(client, context, config));
             yield client.rest.pulls.requestReviewers({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: number,
-                reviewers: reviewers.filter((reviewer) => reviewer !== user.login),
+                reviewers: reviewers.filter(reviewer => reviewer !== user.login)
             });
             return;
         }
@@ -99,13 +121,26 @@ function assignReviewers(client, context, config) {
             const selectedReviewers = selectReviewers(reviewGroup.reviewers, reviewGroup.numberOfReviewers);
             reviewers.push(...selectedReviewers);
         }
+        core.info(`${Object.keys(config.reviewTeams).length} teams found in config file`);
+        for (const reviewTeam of Object.values(config.reviewTeams)) {
+            const members = yield getTeamMembers(client, context, reviewTeam.teamSlug);
+            const notAlreadySelectedMembers = members.filter(member => {
+                return !reviewers.includes(member);
+            });
+            if (reviewTeam.addAllTeamMembers === true) {
+                reviewers.push(...notAlreadySelectedMembers);
+                continue;
+            }
+            const selectedMembers = selectReviewers(notAlreadySelectedMembers, reviewTeam.numberOfReviewers);
+            reviewers.push(...selectedMembers);
+        }
         yield client.rest.pulls.requestReviewers({
             owner: context.repo.owner,
             repo: context.repo.repo,
             pull_number: number,
-            reviewers: reviewers.filter((reviewer) => {
+            reviewers: reviewers.filter(reviewer => {
                 return reviewer !== user.login;
-            }),
+            })
         });
     });
 }
@@ -152,15 +187,17 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const yaml = __importStar(__nccwpck_require__(1917));
 const assign_reviewers_1 = __nccwpck_require__(719);
-function getConfiguration(client, options) {
+function getConfiguration(client, options // eslint-disable-line @typescript-eslint/no-explicit-any
+) {
     return __awaiter(this, void 0, void 0, function* () {
         const { owner, repo, path, ref } = options;
         const result = yield client.rest.repos.getContent({
             owner,
             repo,
             path,
-            ref,
+            ref
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = result.data;
         if (!data.content) {
             throw new Error('the configuration file is not found');
@@ -175,19 +212,16 @@ function run() {
         try {
             const token = core.getInput('token', { required: true });
             const configPath = core.getInput('configuration-path', {
-                required: true,
+                required: true
             });
-            core.debug(`configPath: ${configPath}`);
             const client = github.getOctokit(token);
             const { context } = github;
-            core.debug(`context: ${JSON.stringify(context)}`);
             const config = yield getConfiguration(client, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 path: configPath,
-                ref: context.sha,
+                ref: context.sha
             });
-            core.debug(`config: ${JSON.stringify(config)}`);
             yield (0, assign_reviewers_1.assignReviewers)(client, context, config);
             core.info('Successfully assigned reviewers');
         }
