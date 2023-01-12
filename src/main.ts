@@ -53,7 +53,7 @@ async function run(): Promise<void> {
   } catch (error) {
     if (error instanceof Error) {
       core.error(error)
-      core.setFailed(error.message)
+      core.debug(error.stack || '')
     }
   }
 }

@@ -122,17 +122,19 @@ function assignReviewers(client, context, config) {
             reviewers.push(...selectedReviewers);
         }
         core.info(`${Object.keys(config.reviewTeams).length} teams found in config file`);
-        for (const reviewTeam of Object.values(config.reviewTeams)) {
-            const members = yield getTeamMembers(client, context, reviewTeam.teamSlug);
-            const notAlreadySelectedMembers = members.filter(member => {
-                return !reviewers.includes(member);
-            });
-            if (reviewTeam.addAllTeamMembers === true) {
-                reviewers.push(...notAlreadySelectedMembers);
-                continue;
+        if (config.reviewTeams && Object.keys(config.reviewTeams).length !== 0) {
+            for (const reviewTeam of Object.values(config.reviewTeams)) {
+                const members = yield getTeamMembers(client, context, reviewTeam.teamSlug);
+                const notAlreadySelectedMembers = members.filter(member => {
+                    return !reviewers.includes(member);
+                });
+                if (reviewTeam.addAllTeamMembers === true) {
+                    reviewers.push(...notAlreadySelectedMembers);
+                    continue;
+                }
+                const selectedMembers = selectReviewers(notAlreadySelectedMembers, reviewTeam.numberOfReviewers);
+                reviewers.push(...selectedMembers);
             }
-            const selectedMembers = selectReviewers(notAlreadySelectedMembers, reviewTeam.numberOfReviewers);
-            reviewers.push(...selectedMembers);
         }
         yield client.rest.pulls.requestReviewers({
             owner: context.repo.owner,
@@ -228,7 +230,7 @@ function run() {
         catch (error) {
             if (error instanceof Error) {
                 core.error(error);
-                core.setFailed(error.message);
+                core.debug(error.stack || '');
             }
         }
     });

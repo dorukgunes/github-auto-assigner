@@ -62,7 +62,7 @@ reviewTeams:
 
 ## Development
 After you develop you changes make sure to follow these actions
-- Make sure run `npm run build`
+- Make sure run `npm run build && npm run package`
 - Commit your changes
 - To release, make you sure to create a tag 
 

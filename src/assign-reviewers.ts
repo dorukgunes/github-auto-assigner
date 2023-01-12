@@ -135,27 +135,30 @@ export async function assignReviewers(
   core.info(
     `${Object.keys(config.reviewTeams).length} teams found in config file`
   )
-  for (const reviewTeam of Object.values(config.reviewTeams)) {
-    const members = await getTeamMembers(
-      client,
-      context,
-      reviewTeam.teamSlug
-    )
 
-    const notAlreadySelectedMembers = members.filter(member => {
-      return !reviewers.includes(member)
-    })
-
-    if (reviewTeam.addAllTeamMembers === true) {
-      reviewers.push(...notAlreadySelectedMembers)
-      continue;
+  if (config.reviewTeams && Object.keys(config.reviewTeams).length !== 0) {
+    for (const reviewTeam of Object.values(config.reviewTeams)) {
+      const members = await getTeamMembers(
+        client,
+        context,
+        reviewTeam.teamSlug
+      )
+  
+      const notAlreadySelectedMembers = members.filter(member => {
+        return !reviewers.includes(member)
+      })
+  
+      if (reviewTeam.addAllTeamMembers === true) {
+        reviewers.push(...notAlreadySelectedMembers)
+        continue;
+      }
+  
+      const selectedMembers = selectReviewers(
+        notAlreadySelectedMembers,
+        reviewTeam.numberOfReviewers!
+      )
+      reviewers.push(...selectedMembers)
     }
-
-    const selectedMembers = selectReviewers(
-      notAlreadySelectedMembers,
-      reviewTeam.numberOfReviewers!
-    )
-    reviewers.push(...selectedMembers)
   }
 
   await client.rest.pulls.requestReviewers({
