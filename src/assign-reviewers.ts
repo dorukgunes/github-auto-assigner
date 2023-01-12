@@ -18,6 +18,10 @@ function includesKeywords(title: string, keywords: string[]): boolean {
 function getAllReviewers(config: Config): string[] {
   const reviewers: string[] = []
 
+  if (!config.reviewGroups) {
+    return []
+  }
+
   for (const reviewGroup of Object.values(config.reviewGroups)) {
     reviewers.push(...reviewGroup.reviewers)
   }
@@ -124,12 +128,15 @@ export async function assignReviewers(
   }
 
   const reviewers: string[] = []
-  for (const reviewGroup of Object.values(reviewGroups)) {
-    const selectedReviewers = selectReviewers(
-      reviewGroup.reviewers,
-      reviewGroup.numberOfReviewers
-    )
-    reviewers.push(...selectedReviewers)
+
+  if (reviewGroups && Object.keys(reviewGroups).length !== 0) {
+    for (const reviewGroup of Object.values(reviewGroups)) {
+      const selectedReviewers = selectReviewers(
+        reviewGroup.reviewers,
+        reviewGroup.numberOfReviewers
+      )
+      reviewers.push(...selectedReviewers)
+    }
   }
 
   core.info(

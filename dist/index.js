@@ -47,6 +47,9 @@ function includesKeywords(title, keywords) {
 }
 function getAllReviewers(config) {
     const reviewers = [];
+    if (!config.reviewGroups) {
+        return [];
+    }
     for (const reviewGroup of Object.values(config.reviewGroups)) {
         reviewers.push(...reviewGroup.reviewers);
     }
@@ -117,9 +120,11 @@ function assignReviewers(client, context, config) {
             return;
         }
         const reviewers = [];
-        for (const reviewGroup of Object.values(reviewGroups)) {
-            const selectedReviewers = selectReviewers(reviewGroup.reviewers, reviewGroup.numberOfReviewers);
-            reviewers.push(...selectedReviewers);
+        if (reviewGroups && Object.keys(reviewGroups).length !== 0) {
+            for (const reviewGroup of Object.values(reviewGroups)) {
+                const selectedReviewers = selectReviewers(reviewGroup.reviewers, reviewGroup.numberOfReviewers);
+                reviewers.push(...selectedReviewers);
+            }
         }
         core.info(`${Object.keys(config.reviewTeams).length} teams found in config file`);
         if (config.reviewTeams && Object.keys(config.reviewTeams).length !== 0) {
