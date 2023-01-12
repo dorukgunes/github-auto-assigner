@@ -139,11 +139,11 @@ export async function assignReviewers(
     }
   }
 
-  core.info(
-    `${Object.keys(config.reviewTeams).length} teams found in config file`
-  )
-
   if (config.reviewTeams && Object.keys(config.reviewTeams).length !== 0) {
+    core.info(
+      `${Object.keys(config.reviewTeams).length} teams found in config file`
+    )
+    
     for (const reviewTeam of Object.values(config.reviewTeams)) {
       const members = await getTeamMembers(
         client,
