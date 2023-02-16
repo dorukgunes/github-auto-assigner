@@ -106,6 +106,15 @@ function assignReviewers(client, context, config) {
             core.info('Skips the process since pr title or branch name includes excludeAllKeywords');
             return;
         }
+        const currentReviewers = yield client.rest.pulls.listRequestedReviewers({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: number
+        });
+        if (currentReviewers.data.users.length !== 0) {
+            core.info('Skips the process since reviewers are already assigned');
+            return;
+        }
         if (includeAllKeywords &&
             (includesKeywords(title, includeAllKeywords) ||
                 includesKeywords(pullRequestBranch, includeAllKeywords))) {

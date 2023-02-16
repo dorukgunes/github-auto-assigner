@@ -10,7 +10,7 @@ Create a workflow (e.g. `.github/workflows/action.yml` For more detail, refer to
 name: 'Auto Assign Action'
 on:
   pull_request:
-    types: [opened, ready_for_review]
+    types: [opened, ready_for_review, edited]
 
 jobs:
   add-reviewers:

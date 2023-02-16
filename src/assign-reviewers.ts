@@ -109,6 +109,17 @@ export async function assignReviewers(
     return
   }
 
+  const currentReviewers = await client.rest.pulls.listRequestedReviewers({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    pull_number: number
+  })
+
+  if (currentReviewers.data.users.length !== 0) {
+    core.info('Skips the process since reviewers are already assigned')
+    return
+  }
+
   if (
     includeAllKeywords &&
     (includesKeywords(title, includeAllKeywords) ||
